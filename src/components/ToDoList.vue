@@ -9,9 +9,9 @@
     <el-card class="todo-list">
       <template #header>
         <span>未完成</span>
-        <el-badge :value="todoItem.length"></el-badge>
+        <el-badge :value="todoItem.data.length"></el-badge>
       </template>
-      <div v-for="(todo, index) in todoItem" :key="index" class="item">
+      <div v-for="(todo, index) in todoItem.data" :key="index" class="item">
         <el-row>
           <el-col :span="20" class="item-title">{{ todo }}</el-col>
           <el-col :span="4" class="item-button">
@@ -25,9 +25,9 @@
     <el-card class="todo-list">
       <template #header>
         <span>完成</span>
-        <el-badge :value="doneItem.length"></el-badge>
+        <el-badge :value="doneItem.data.length"></el-badge>
       </template>
-      <div v-for="(done, index) in doneItem" :key="index" class="item done" style="border-color: #708090;">
+      <div v-for="(done, index) in doneItem.data" :key="index" class="item done" style="border-color: #708090;">
         <el-row>
           <el-col :span="20" class="item-title">{{ done }}</el-col>
           <el-col :span="4" class="item-button">
@@ -49,27 +49,51 @@ export default {
   data() {
     return {
       input: '',
-      todoItem: [],
-      doneItem: []
+      todoItem: { data: [] },
+      doneItem: { data: [] }
     }
   },
   methods: {
     addItem() {
       if(this.input === '') { return }
-      this.todoItem.push(this.input)
+      this.todoItem.data.push(this.input)
       this.input = ''
     },
     removeItem(index) {
-      this.todoItem.splice(index, 1)
+      this.todoItem.data.splice(index, 1)
     },
     completeItem(index, item) {
       this.removeItem(index)
-      this.doneItem.push(item)
+      this.doneItem.data.push(item)
     },
     back2todo(index, item) {
-      this.doneItem.splice(index, 1)
-      this.todoItem.push(item)
+      this.doneItem.data.splice(index, 1)
+      this.todoItem.data.push(item)
     }
+  },
+  created: function () {
+    console.log("localStorage todoItem: ", localStorage.getItem('todoItem'))
+    if(localStorage.getItem('todoItem')) { this.todoItem = JSON.parse(localStorage.getItem('todoItem')) }
+    console.log("localStorage doneItem: ", localStorage.getItem('doneItem'))
+    if(localStorage.getItem('doneItem')) { this.doneItem = JSON.parse(localStorage.getItem('doneItem')) }
+  },
+  watch: {
+    todoItem: {
+      handler: function (value) {
+        console.log("todo", value)
+        localStorage.setItem('todoItem', JSON.stringify(value))
+      },
+      deep: true,       // to watch object
+      immediate: false  // 初始化先觸發
+    },
+    doneItem: {
+      handler: function (value) {
+        console.log("done", value)
+        localStorage.setItem('doneItem', JSON.stringify(value))
+      },
+      deep: true,      
+      immediate: false  
+    }    
   }
 }
 </script>
@@ -106,7 +130,7 @@ export default {
 .item-button {
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
+  justify-content: center;
 }
 
 .done {
